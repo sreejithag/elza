@@ -6,7 +6,7 @@ on:
       - v*
 jobs:
   build-lin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
@@ -27,67 +27,6 @@ jobs:
       - run: ls ./resources/lin/tor
       - run: npm install
       - run: npm run build-linux --if-present
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          files: |
-            dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-win:
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        node-version: [12.x]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: iwr -outf tor.zip https://www.torproject.org/dist/torbrowser/10.0.7/tor-win32-0.4.4.6.zip
-      - run: Expand-Archive -Path tor.zip -DestinationPath .\resources\win
-      - run: ls .\resources\win
-      - run: npm run build-win --if-present
-      - run: move .\dist\nsis-web\*.exe .\dist\
-      - run: move .\dist\nsis-web\*.7z .\dist\
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          files: |
-            dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-mac:
-    runs-on: macos-latest
-
-    strategy:
-      matrix:
-        node-version: [12.x]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: wget -O tor.tar.gz "https://dist.torproject.org/tor-0.4.4.6.tar.gz"
-      - run: mkdir tor && tar -xvzf tor.tar.gz -C tor --strip-components=1
-      - run: cd tor && ./configure && make
-      - run: mkdir -p ./resources/mac/tor && mv ./tor/src/app/* ./resources/mac/tor
-      - run: ls ./resources/mac/tor
-      - run: npm install
-      - run: npm run build-mac --if-present
-      - run: rm ./dist/*.zip
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
